@@ -12,8 +12,9 @@ task getDistanceAndDegree();
 float distance = getUSDistance(sonarSensor);
 float previousDistance = getUSDistance(sonarSensor);
 
+float scanDegree = 45;
 float targetDegree = 0;
-float targetDistance = 0;
+float targetDistance = 1000;
 
 bool toScan = false;
 bool getMinimum = false;
@@ -21,7 +22,8 @@ bool getMinimum = false;
 int recordedDegree=0;
 
 void turn(int degreeToTurn){
-	 if (toScan) {startTask(getDistanceAndDegree);}
+     startTask(getDistanceAndDegree);
+
 	 int turningSpeed = 7;
 	 degreeToTurn = degreeToTurn * 2;
 	 resetMotorEncoder(leftMotor);
@@ -39,34 +41,33 @@ void turn(int degreeToTurn){
 	 		while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)) {
 	   		setMotorSync(leftMotor, rightMotor, -100, turningSpeed);
 	 		}
-		if (toScan) {stopTask(getDistanceAndDegree);}
+	
+	  stopTask(getDistanceAndDegree);
 	}
 
 }
 
+void scan() {
+	recordedDegree = 0;
+	targetDegree = 0;
+	toScan = false;
+	turn(scanDegree)
+	
+	// Begin to scan
+	toScan = true;
+	turn(-2*scanDegree);
+	toScan = false;
+	turn(targetDegree)
+}
 
 
 task main()
 {
-
-	int scanDegree = 45;
-	toScan=true;
-  turn(scanDegree);
-
-  toScan=false;
-	turn(-scanDegree);
-
-	toScan=true;
-	turn(-scanDegree);
-	toScan=false;
-	turn(scanDegree);
-
-	turn(targetDegree);
-
-	//while(true){
-	//		displayBigTextLine(6, "distance: %.2f", targetDistance);
-	//		displayBigTextLine(8, "degree: %d", targetDegree);
-	//}
+	
+	while (int i = 0; i < 5; i++) {
+		scan();
+		
+	}
 
 }
 
@@ -82,18 +83,19 @@ task showInfo(){
 
 
 task getDistanceAndDegree() {
-		while(true) {
-			recordedDegree = getMotorEncoder(leftMotor)/2;
-			distance = getUSDistance(sonarSensor);
-			if (distance < previousDistance) {
-				previousDistance = distance;
-				targetDegree = recordedDegree;
+		if (toScan) {
+			while(true) {
+				recordedDegree = getMotorEncoder(rightMotor)/2;
+				distance = getUSDistance(sonarSensor);
+				
+				if (distance < previousDistance) {
+					previousDistance = distance;
+					targetDegree = recordedDegree;
+				}
 			}
-		}
-		targetDegree = previousDistance;
-		targetDistance = previousDistance;
+			targetDegree = 2*scanDegree - targetDegree;
+			targetDistance = previousDistance;
+		}		
 }
 
-task goForTarget() {
-	
-}
+
