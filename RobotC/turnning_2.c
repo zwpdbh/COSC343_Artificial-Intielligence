@@ -94,4 +94,6 @@ task getDistanceAndDegree() {
 		targetDistance = previousDistance;
 }
 
-
+task goForTarget() {
+	
+}
