@@ -21,6 +21,7 @@ int TURNINGSPEED = 10;
 int MAX_BOUNDARY_EXPECTED = 4*100;
 int rightBoundaryDegree = 0;
 int leftBoundaryDegree = 0;
+int differences = 30;
 
 
 // DEFINED FUNCTION
@@ -69,14 +70,16 @@ void turn(int degreeToTurn){
 void scan() {
     approachingTarget = false;
     int scanDegree = 45;
-    if(getTouchValue(leftBumper)==1){return;}
-    //if(targetDistance<=30) {return;}
+    if(getTouchValue(leftBumper)==1 || getTouchValue(rightBumper)==1){
+    	return;
+    } else {
+    	turn(-scanDegree);
+    	if (approachingTarget) {return;}
+    	turn(scanDegree*2);
+    	if (approachingTarget) {return;}
+    	turn(-scanDegree);
+    }
 
-    turn(-scanDegree);
-    if (approachingTarget) {return;}
-    turn(scanDegree*2);
-    if (approachingTarget) {return;}
-    turn(-scanDegree);
 
 
     //while(!approachingTarget) {
@@ -160,7 +163,7 @@ int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
 void testBoundary() {
     leftBoundaryDegree = turnOneMotorUntilMeetBoundary(RIGHT);
     rightBoundaryDegree = turnOneMotorUntilMeetBoundary(LEFT);
-    int differences = fabs(rightBoundaryDegree - leftBoundaryDegree);
+    differences = fabs(rightBoundaryDegree - leftBoundaryDegree);
     if(leftBoundaryDegree>rightBoundaryDegree) {
         turnOneMotor(RIGHT, differences/4);
         // turn(-differences/20);
@@ -197,7 +200,7 @@ void moveForwardWithSpeed(int movingSpeed) {
 
 void moveToLine(){
     moveForwardWithSpeed(MOVINGSPEED);
-    turnOneMotor(RIGHT, 300);
+    turnOneMotor(RIGHT, 330);
 }
 
 task main()
@@ -205,11 +208,17 @@ task main()
     //stage one
     moveToLine();
     while(totalBlackTile<15) {
-        moveForwardWithSpeed(MOVINGSPEED);
-        testBoundary();
+    		if (differences<20 && totalBlackTile<14) {
+    				moveForwardWithSpeed(MOVINGSPEED);
+    				moveForwardWithSpeed(MOVINGSPEED);
+    				testBoundary();
+    		}	else {
+    				moveForwardWithSpeed(MOVINGSPEED);
+        		testBoundary();
+    		}
     }
 
-    turnOneMotor(LEFT, 310);
+    turnOneMotor(LEFT, 330);
 		setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
    	wait1Msec(2000);
 
