@@ -61,41 +61,6 @@ void turn(int degreeToTurn){
 }
 
 
-void turnOneMotor(bool leftMotorOrRightMotor, int motorEncoder)
-{ // leftMotorOrRightMotor:
-	// true, turn RIGHT motor,
-	// false, turn LEFT motor.
-	// motorEncoder, is the encoder you want the wheel to turn, positive means forward, negative means backward
-	resetMotorEncoder(leftMotor);
-	resetMotorEncoder(rightMotor);
-
-	if(leftMotorOrRightMotor) { // RightMotor move while LeftMotor stop
-		if (motorEncoder > 0) { // move forward
-			setMotorTarget(rightMotor, motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)) {
-				setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
-			}
-			} else if (motorEncoder<0) { // move backward
-			setMotorTarget(rightMotor, -motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(rightMotor)!= - getMotorTarget(rightMotor)) {
-				setMotorSync(leftMotor, rightMotor, -50, -TURNINGSPEED);
-			}
-		}
-		} else {	// else false, LeftMotor move while RightMotor stop
-		if (motorEncoder > 0) {
-			setMotorTarget(leftMotor, motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor)) {
-				setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
-			}
-			} else if (motorEncoder < 0) {
-			setMotorTarget(leftMotor, -motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(leftMotor)!= - getMotorTarget(leftMotor)){
-				setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
-			}
-		}
-	}
-}
-
 
 void scan() {
 	int scanDegree = 60;
@@ -114,6 +79,40 @@ void scan() {
 }
 
 
+void turnOneMotor(bool leftMotorOrRightMotor, int motorEncoder)
+{ // leftMotorOrRightMotor:
+	// true, turn RIGHT motor,
+	// false, turn LEFT motor.
+	// motorEncoder, is the encoder you want the wheel to turn, positive means forward, negative means backward
+	resetMotorEncoder(leftMotor);
+	resetMotorEncoder(rightMotor);
+
+	if(leftMotorOrRightMotor) { // RightMotor move while LeftMotor stop
+		if (motorEncoder > 0) { // move forward
+			setMotorTarget(rightMotor, motorEncoder, TURNINGSPEED);
+			while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)) {
+				setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
+			}
+			} else if (motorEncoder<0) { // move backward
+			setMotorTarget(rightMotor, -motorEncoder, TURNINGSPEED);
+			while(getMotorEncoder(rightMotor)!= -1*getMotorTarget(rightMotor)) {
+				setMotorSync(leftMotor, rightMotor, -50, -TURNINGSPEED);
+			}
+		}
+		} else {	// else false, LeftMotor move while RightMotor stop
+		if (motorEncoder > 0) {
+			setMotorTarget(leftMotor, motorEncoder, TURNINGSPEED);
+			while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor)) {
+				setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
+			}
+			} else if (motorEncoder < 0) {
+			setMotorTarget(leftMotor, -motorEncoder, TURNINGSPEED);
+			while(getMotorEncoder(leftMotor)!= -1*getMotorTarget(leftMotor)){
+				setMotorSync(leftMotor, rightMotor, 50, -TURNINGSPEED);
+			}
+		}
+	}
+}
 
 
 int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
@@ -133,6 +132,7 @@ int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
 			saved_leftBoundaryDegree = getMotorEncoder(rightMotor);
 			turnOneMotor(RIGHT, -1*saved_leftBoundaryDegree);
 			return saved_leftBoundaryDegree;
+
 		} else {
 			setMotorTarget(leftMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
 			while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getColorName(colorSensor)==colorBlack) {
@@ -151,12 +151,13 @@ void testBoundary() {
 
 	leftBoundaryDegree = turnOneMotorUntilMeetBoundary(RIGHT);
 	rightBoundaryDegree = turnOneMotorUntilMeetBoundary(LEFT);
-
 	int differences = abs(rightBoundaryDegree - leftBoundaryDegree);
 	if(leftBoundaryDegree>rightBoundaryDegree) {
-		turn(-differences/27);
+		turnOneMotor(RIGHT, differences/4);
+		// turn(-differences/20);
 		} else {
-		turn(differences/27);
+		turnOneMotor(LEFT, differences/4);
+		//turn(differences/20);
 	}
 
 }
@@ -164,8 +165,11 @@ void testBoundary() {
 
 task main()
 {
-	scan();
+	//scan();
 	testBoundary();
+	//int saved_rightBoundaryDegree = 300;
+	//// turnOneMotor(LEFT, saved_rightBoundaryDegree);
+	//turnOneMotor(LEFT, -1*saved_rightBoundaryDegree);
 
 }
 
