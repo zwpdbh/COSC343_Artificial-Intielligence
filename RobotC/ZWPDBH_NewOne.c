@@ -53,7 +53,7 @@ void turn(int degreeToTurn){
             if (currentDistance<previousDistance) {
                 previousDistance = currentDistance; // it means it is turning toward to target;
                 approachingTarget = true;
-            } else if (currentDistance > previousDistance) {
+            } else if (approachingTarget && currentDistance > previousDistance) {
                 return;
             }
         }
