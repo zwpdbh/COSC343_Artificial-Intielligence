@@ -8,14 +8,14 @@
 
 // GOLOBAL VARIABLES
 int totalBlackTile = 0;
-int MOVINGSPEED = 30;
+int MOVINGSPEED = 20;
 int targetDistance = 1000;
 
 // variables for scan
 bool RIGHT = true;
 bool LEFT = false;
 
-int TURNINGSPEED = 7;
+int TURNINGSPEED = 10;
 
 // variables for test boundary
 int MAX_BOUNDARY_EXPECTED = 4*100;
@@ -70,13 +70,13 @@ void scan() {
     approachingTarget = false;
     int scanDegree = 45;
     if(getTouchValue(leftBumper)==1){return;}
-    if(targetDistance<=30) {return;}
+    //if(targetDistance<=30) {return;}
 
-    turn(scanDegree);
+    turn(-scanDegree);
     if (approachingTarget) {return;}
-    turn(-scanDegree*2);
+    turn(scanDegree*2);
     if (approachingTarget) {return;}
-    turn(scanDegree);
+    turn(-scanDegree);
 
 
     //while(!approachingTarget) {
@@ -160,7 +160,7 @@ int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
 void testBoundary() {
     leftBoundaryDegree = turnOneMotorUntilMeetBoundary(RIGHT);
     rightBoundaryDegree = turnOneMotorUntilMeetBoundary(LEFT);
-    int differences = abs(rightBoundaryDegree - leftBoundaryDegree);
+    int differences = fabs(rightBoundaryDegree - leftBoundaryDegree);
     if(leftBoundaryDegree>rightBoundaryDegree) {
         turnOneMotor(RIGHT, differences/4);
         // turn(-differences/20);
@@ -175,7 +175,7 @@ void moveForwardWithSpeed(int movingSpeed) {
     TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
     TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
     int count = 0;
-    while(count<1 && getTouchValue(leftBumper)!=1 && targetDistance>30){
+    while(count<1 && getTouchValue(leftBumper)!=1){
     		motor[leftMotor] = movingSpeed;
     		motor[rightMotor] = movingSpeed;
         //setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
@@ -204,22 +204,20 @@ task main()
 {
     //stage one
     moveToLine();
-    while(totalBlackTile<3) {
+    while(totalBlackTile<15) {
         moveForwardWithSpeed(MOVINGSPEED);
         testBoundary();
     }
 
     turnOneMotor(LEFT, 310);
-		setMotorSyncTime(leftMotor, rightMotor, 0, 2000, 30);
+		setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
    	wait1Msec(2000);
 
-
-
-    while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0 && targetDistance>30){
+    while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
     			  moveForwardWithSpeed(MOVINGSPEED);
         		scan();
     }
-    setMotorSyncTime(leftMotor, rightMotor, 0, 2000, 30);
+    setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
    	wait1Msec(2000);
 
     playSound(soundUpwardTones);
