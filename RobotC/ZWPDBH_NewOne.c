@@ -1,68 +1,3 @@
-Frank
-
-
-
-Drive
-My Drive
-NEW 
-Folders and views
-My DriveMy Drive
-Shared with meShared with me
-Google PhotosGoogle Photos
-RecentRecent
-StarredStarred
-TrashTrash
-601 MB of 15 GB used
-Upgrade storage
-Get Drive for Mac
-.
-
-PDF
-Artificial Intelligence A Modern Approach 3rd Edition.pdf
-
-PDF
-Data.Communications.and.Networking.5th.Edition.pdf
-
-PDF
-Foundations of Python network programming.pdf
-
-PDF
-Getting started
-
-PDF
-head_first_design_patterns.pdf
-
-PDF
-Introduction to Algorithms 3rd Edition Sep 2010.pdf
-
-Compressed Archive
-Introduction to Algorithms 3rd Edition.pdf.zip
-
-PDF
-Introductory Statistics by Prem S. Mann .pdf
-
-PDF
-Introductory Statistics by Prem S. Mann .pdf
-
-PDF
-LEARNING PYTHON POWERFUL OBJECT-ORIENTED PROGRAMMING, 5TH EDITION-OREILLY.pdf
-
-PDF
-Linear Algebra, A Modern Introduction- David Poole.pdf
-
-PDF
-Pattern Recognition and Machine Learning.pdf
-
-PDF
-Programming Python 4th.Edition O'Reilly.pdf
-
-PDF
-Web Scraping with Python.pdf
-
-C
-ZWPDBH_NewOne.c
-
-
 #pragma config(Sensor, S1,     leftBumper,     sensorEV3_Touch)
 #pragma config(Sensor, S2,     rightBumper,    sensorEV3_Touch)
 #pragma config(Sensor, S3,     colorSensor,    sensorEV3_Color, modeEV3Color_Color)
@@ -76,9 +11,10 @@ task getDistanceAndDegree();
 
 // GOLOBAL VARIABLES
 int totalBlackTile = 0;
-int MOVINGSPEED = 30;
+int MOVINGSPEED = 10;
 
 // variables for scan
+bool bumps = true;
 bool RIGHT = true;
 bool LEFT = false;
 
@@ -98,6 +34,7 @@ int MAX_BOUNDARY_EXPECTED = 4*100;
 int rightBoundaryDegree = 0;
 int leftBoundaryDegree = 0;
 
+
 // DEFINED FUNCTION
 
 
@@ -107,12 +44,14 @@ void turn(int degreeToTurn){
 	resetMotorEncoder(leftMotor);
 	resetMotorEncoder(rightMotor);
 	if (degreeToTurn > 0) {
+		if(getTouchValue(leftBumper)==1){return;}
 		setMotorTarget(leftMotor, degreeToTurn, TURNINGSPEED);
 		setMotorTarget(rightMotor, -degreeToTurn, TURNINGSPEED);
 		while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor)) {
 			setMotorSync(leftMotor, rightMotor, 100, TURNINGSPEED);
 		}
 		} else if (degreeToTurn < 0) {
+		if(getTouchValue(leftBumper)==1){return;}
 		degreeToTurn = -1 * degreeToTurn;
 		setMotorTarget(leftMotor, -degreeToTurn, TURNINGSPEED);
 		setMotorTarget(rightMotor, degreeToTurn, TURNINGSPEED);
@@ -127,6 +66,7 @@ void turn(int degreeToTurn){
 
 
 void scan() {
+	if(getTouchValue(leftBumper)==1){return;}
 	int scanDegree = 60;
 	// scan right side
 	toScan=true;
@@ -180,33 +120,33 @@ void turnOneMotor(bool leftMotorOrRightMotor, int motorEncoder)
 
 
 int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
-		resetMotorEncoder(leftMotor);
-		resetMotorEncoder(rightMotor);
+	resetMotorEncoder(leftMotor);
+	resetMotorEncoder(rightMotor);
 
-		int saved_leftBoundaryDegree = 0;
-		int saved_rightBoundaryDegree = 0;
+	int saved_leftBoundaryDegree = 0;
+	int saved_rightBoundaryDegree = 0;
 
-		if(leftOrRightMotor) {
-			 // turn RightMotor
-			setMotorTarget(rightMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
-			while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor) && getColorName(colorSensor)==colorBlack) {
-				setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
-			}
+	if(leftOrRightMotor) {
+		// turn RightMotor
+		setMotorTarget(rightMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
+		while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor) && getColorName(colorSensor)==colorBlack) {
+			setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
+		}
 
-			saved_leftBoundaryDegree = getMotorEncoder(rightMotor);
-			turnOneMotor(RIGHT, -1*saved_leftBoundaryDegree);
-			return saved_leftBoundaryDegree;
+		saved_leftBoundaryDegree = getMotorEncoder(rightMotor);
+		turnOneMotor(RIGHT, -1*saved_leftBoundaryDegree);
+		return saved_leftBoundaryDegree;
 
 		} else {
-			setMotorTarget(leftMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
-			while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getColorName(colorSensor)==colorBlack) {
-				setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
-			}
-
-			saved_rightBoundaryDegree = getMotorEncoder(leftMotor);
-			turnOneMotor(LEFT, -1*saved_rightBoundaryDegree);
-			return saved_rightBoundaryDegree;
+		setMotorTarget(leftMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
+		while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getColorName(colorSensor)==colorBlack) {
+			setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
 		}
+
+		saved_rightBoundaryDegree = getMotorEncoder(leftMotor);
+		turnOneMotor(LEFT, -1*saved_rightBoundaryDegree);
+		return saved_rightBoundaryDegree;
+	}
 }
 
 
@@ -226,36 +166,58 @@ void testBoundary() {
 }
 
 void moveForwardWithSpeed(int movingSpeed) {
-		TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
-		TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
-		int count = 0;
-		while(count<=1){
-			setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
-			currentColor = getColorName(colorSensor);						// now robot enter the white tile.
-			if (currentColor == colorWhite) {
-					previousColor = colorWhite;
+	TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
+	TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
+	int count = 0;
+	while(count<1 && getTouchValue(leftBumper)!=1){
+		setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
+		currentColor = getColorName(colorSensor);						// now robot enter the white tile.
+		if (currentColor == colorWhite) {
+			previousColor = colorWhite;
 			} else if(currentColor == colorBlack && previousColor == colorWhite) {
-					count++;
-					previousColor = colorBlack;
-					totalBlackTile++;
-					playSound(soundUpwardTones);
-			}
+			count++;
+			previousColor = colorBlack;
+			totalBlackTile++;
+			playSound(soundUpwardTones);
 		}
-		sleep(200);
+	}
+	sleep(200);
 }
 
 
+void moveToLine(){
+	moveForwardWithSpeed(MOVINGSPEED);
+	turnOneMotor(RIGHT, 300);
+
+}
+
 task main()
 {
-	while(totalBlackTile<=5) {
+	//stage one
+	moveToLine();
+	while(totalBlackTile<5) {
 		moveForwardWithSpeed(MOVINGSPEED);
 		testBoundary();
 	}
+
+	turnOneMotor(LEFT, 300);
+
+
+	// stage two
+	while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
+		moveForwardWithSpeed(MOVINGSPEED);
+		scan();
+	}
+	setMotorSyncTime(leftMotor, rightMotor, 0, 2000, 30);
+	wait1Msec(2000);
+	playSound(soundUpwardTones);
+	wait1Msec(1000);
 
 }
 
 
 task getDistanceAndDegree() {
+	if(getTouchValue(leftBumper)==1){return;}
 	while(true) {
 		recordedDegree = getMotorEncoder(leftMotor)/2;
 		distance = getUSDistance(sonarSensor);
