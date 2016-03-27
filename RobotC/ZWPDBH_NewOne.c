@@ -26,209 +26,212 @@ int differences = 30;
 
 // DEFINED FUNCTION
 bool approachingTarget = false;
-void turn(int degreeToTurn){
-	int previousDistance = getUSDistance(sonarSensor);
-	int currentDistance = getUSDistance(sonarSensor);
-
-	degreeToTurn = degreeToTurn * 2;
-	resetMotorEncoder(leftMotor);
-	resetMotorEncoder(rightMotor);
-	if (degreeToTurn >= 0) {
-		setMotorTarget(leftMotor, degreeToTurn, TURNINGSPEED);
-		setMotorTarget(rightMotor, -degreeToTurn, TURNINGSPEED);
-		while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getTouchValue(leftBumper)!=1 && getTouchValue(rightBumper)!=1) {
-			setMotorSync(leftMotor, rightMotor, 100, TURNINGSPEED);
-			currentDistance = getUSDistance(sonarSensor);
-			if (currentDistance<previousDistance) {
-				previousDistance = currentDistance; // it means it is turning toward to target;
-				approachingTarget = true;
-				} else if (approachingTarget && currentDistance > previousDistance && previousDistance < targetDistance) {
-				targetDistance = previousDistance;
-				return;
-			}
-		}
-		} else if (degreeToTurn <= 0) {
-		degreeToTurn = -1 * degreeToTurn;
-		setMotorTarget(leftMotor, -degreeToTurn, TURNINGSPEED);
-		setMotorTarget(rightMotor, degreeToTurn, TURNINGSPEED);
-		while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)&& getTouchValue(leftBumper)!=1 && getTouchValue(rightBumper)!=1) {
-			setMotorSync(leftMotor, rightMotor, -100, TURNINGSPEED);
-			currentDistance = getUSDistance(sonarSensor);
-			if (currentDistance<previousDistance) {
-				previousDistance = currentDistance; // it means it is turning toward to target;
-				approachingTarget = true;
-				} else if (approachingTarget && currentDistance > previousDistance && previousDistance < targetDistance) {
-				targetDistance = previousDistance;
-				return;
-			}
-		}
-	}
+void turn(int degreeToTurn, int TURNINGSPEED){
+    int previousDistance = getUSDistance(sonarSensor);
+    int currentDistance = getUSDistance(sonarSensor);
+    
+    degreeToTurn = degreeToTurn * 2;
+    resetMotorEncoder(leftMotor);
+    resetMotorEncoder(rightMotor);
+    if (degreeToTurn >= 0) {
+        setMotorTarget(leftMotor, degreeToTurn, TURNINGSPEED);
+        setMotorTarget(rightMotor, -degreeToTurn, TURNINGSPEED);
+        while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getTouchValue(leftBumper)!=1 && getTouchValue(rightBumper)!=1) {
+            setMotorSync(leftMotor, rightMotor, 100, TURNINGSPEED);
+            currentDistance = getUSDistance(sonarSensor);
+            if (currentDistance<previousDistance) {
+                previousDistance = currentDistance; // it means it is turning toward to target;
+                approachingTarget = true;
+            } else if (approachingTarget && currentDistance > previousDistance && previousDistance < targetDistance) {
+                targetDistance = previousDistance;
+                return;
+            }
+        }
+    } else if (degreeToTurn <= 0) {
+        degreeToTurn = -1 * degreeToTurn;
+        setMotorTarget(leftMotor, -degreeToTurn, TURNINGSPEED);
+        setMotorTarget(rightMotor, degreeToTurn, TURNINGSPEED);
+        while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)&& getTouchValue(leftBumper)!=1 && getTouchValue(rightBumper)!=1) {
+            setMotorSync(leftMotor, rightMotor, -100, TURNINGSPEED);
+            currentDistance = getUSDistance(sonarSensor);
+            if (currentDistance<previousDistance) {
+                previousDistance = currentDistance; // it means it is turning toward to target;
+                approachingTarget = true;
+            } else if (approachingTarget && currentDistance > previousDistance && previousDistance < targetDistance) {
+                targetDistance = previousDistance;
+                return;
+            }
+        }
+    }
 }
 
 
 
 void scan() {
-	approachingTarget = false;
-	int scanDegree = 45;
-	if(getTouchValue(leftBumper)==1 || getTouchValue(rightBumper)==1){
-		return;
-		} else {
-		turn(-scanDegree);
-		if (approachingTarget) {return;}
-		turn(scanDegree*2);
-		if (approachingTarget) {return;}
-		turn(-scanDegree);
-	}
-
-
-
-	//while(!approachingTarget) {
-	//		if(count>=3) {break;}
-	//    turn(scanDegree);
-	//    if (approachingTarget) {break;}
-	//    turn(-scanDegree*2);
-	//    if (approachingTarget) {break;}
-	//    turn(scanDegree);
-	//}
+    approachingTarget = false;
+    int scanDegree = 45;
+    if(getTouchValue(leftBumper)==1 || getTouchValue(rightBumper)==1){
+        return;
+    } else {
+        turn(-scanDegree, TURNINGSPEED);
+        if (approachingTarget) {return;}
+        turn(scanDegree*2,TURNINGSPEED);
+        if (approachingTarget) {return;}
+        turn(-scanDegree, TURNINGSPEED);
+    }
+    
+    
+    
+    //while(!approachingTarget) {
+    //		if(count>=3) {break;}
+    //    turn(scanDegree);
+    //    if (approachingTarget) {break;}
+    //    turn(-scanDegree*2);
+    //    if (approachingTarget) {break;}
+    //    turn(scanDegree);
+    //}
 }
 
 
 void turnOneMotor(bool leftMotorOrRightMotor, int motorEncoder)
 { // leftMotorOrRightMotor:
-	// true, turn RIGHT motor,
-	// false, turn LEFT motor.
-	// motorEncoder, is the encoder you want the wheel to turn, positive means forward, negative means backward
-	resetMotorEncoder(leftMotor);
-	resetMotorEncoder(rightMotor);
-
-	if(leftMotorOrRightMotor) { // RightMotor move while LeftMotor stop
-		if (motorEncoder > 0) { // move forward
-			setMotorTarget(rightMotor, motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)) {
-				setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
-			}
-			} else if (motorEncoder<0) { // move backward
-			setMotorTarget(rightMotor, -motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(rightMotor)!= -1*getMotorTarget(rightMotor)) {
-				setMotorSync(leftMotor, rightMotor, -50, -TURNINGSPEED);
-			}
-		}
-		} else {	// else false, LeftMotor move while RightMotor stop
-		if (motorEncoder > 0) {
-			setMotorTarget(leftMotor, motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor)) {
-				setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
-			}
-			} else if (motorEncoder < 0) {
-			setMotorTarget(leftMotor, -motorEncoder, TURNINGSPEED);
-			while(getMotorEncoder(leftMotor)!= -1*getMotorTarget(leftMotor)){
-				setMotorSync(leftMotor, rightMotor, 50, -TURNINGSPEED);
-			}
-		}
-	}
+    // true, turn RIGHT motor,
+    // false, turn LEFT motor.
+    // motorEncoder, is the encoder you want the wheel to turn, positive means forward, negative means backward
+    resetMotorEncoder(leftMotor);
+    resetMotorEncoder(rightMotor);
+    
+    if(leftMotorOrRightMotor) { // RightMotor move while LeftMotor stop
+        if (motorEncoder > 0) { // move forward
+            setMotorTarget(rightMotor, motorEncoder, TURNINGSPEED);
+            while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)) {
+                setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
+            }
+        } else if (motorEncoder<0) { // move backward
+            setMotorTarget(rightMotor, -motorEncoder, TURNINGSPEED);
+            while(getMotorEncoder(rightMotor)!= -1*getMotorTarget(rightMotor)) {
+                setMotorSync(leftMotor, rightMotor, -50, -TURNINGSPEED);
+            }
+        }
+    } else {	// else false, LeftMotor move while RightMotor stop
+        if (motorEncoder > 0) {
+            setMotorTarget(leftMotor, motorEncoder, TURNINGSPEED);
+            while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor)) {
+                setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
+            }
+        } else if (motorEncoder < 0) {
+            setMotorTarget(leftMotor, -motorEncoder, TURNINGSPEED);
+            while(getMotorEncoder(leftMotor)!= -1*getMotorTarget(leftMotor)){
+                setMotorSync(leftMotor, rightMotor, 50, -TURNINGSPEED);
+            }
+        }
+    }
 }
 
 
 int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
-	resetMotorEncoder(leftMotor);
-	resetMotorEncoder(rightMotor);
-
-	int saved_leftBoundaryDegree = 0;
-	int saved_rightBoundaryDegree = 0;
-
-	if(leftOrRightMotor) {
-		// turn RightMotor
-		setMotorTarget(rightMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
-		while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor) && getColorName(colorSensor)==colorBlack) {
-			setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
-		}
-
-		saved_leftBoundaryDegree = getMotorEncoder(rightMotor);
-		turnOneMotor(RIGHT, -1*saved_leftBoundaryDegree);
-		return saved_leftBoundaryDegree;
-
-		} else {
-		setMotorTarget(leftMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
-		while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getColorName(colorSensor)==colorBlack) {
-			setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
-		}
-
-		saved_rightBoundaryDegree = getMotorEncoder(leftMotor);
-		turnOneMotor(LEFT, -1*saved_rightBoundaryDegree);
-		return saved_rightBoundaryDegree;
-	}
+    resetMotorEncoder(leftMotor);
+    resetMotorEncoder(rightMotor);
+    
+    int saved_leftBoundaryDegree = 0;
+    int saved_rightBoundaryDegree = 0;
+    
+    if(leftOrRightMotor) {
+        // turn RightMotor
+        setMotorTarget(rightMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
+        while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor) && getColorName(colorSensor)==colorBlack) {
+            setMotorSync(leftMotor, rightMotor, -50, TURNINGSPEED);
+        }
+        
+        saved_leftBoundaryDegree = getMotorEncoder(rightMotor);
+        turnOneMotor(RIGHT, -1*saved_leftBoundaryDegree);
+        return saved_leftBoundaryDegree;
+        
+    } else {
+        setMotorTarget(leftMotor, MAX_BOUNDARY_EXPECTED, TURNINGSPEED);
+        while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getColorName(colorSensor)==colorBlack) {
+            setMotorSync(leftMotor, rightMotor, 50, TURNINGSPEED);
+        }
+        
+        saved_rightBoundaryDegree = getMotorEncoder(leftMotor);
+        turnOneMotor(LEFT, -1*saved_rightBoundaryDegree);
+        return saved_rightBoundaryDegree;
+    }
 }
 
 
 void testBoundary() {
-	leftBoundaryDegree = turnOneMotorUntilMeetBoundary(RIGHT);
-	rightBoundaryDegree = turnOneMotorUntilMeetBoundary(LEFT);
-	differences = fabs(rightBoundaryDegree - leftBoundaryDegree);
-	if(leftBoundaryDegree>rightBoundaryDegree) {
-		turnOneMotor(RIGHT, differences/4);
-		// turn(-differences/20);
-		} else {
-		turnOneMotor(LEFT, differences/4);
-		//turn(differences/20);
-	}
-
+    leftBoundaryDegree = turnOneMotorUntilMeetBoundary(RIGHT);
+    rightBoundaryDegree = turnOneMotorUntilMeetBoundary(LEFT);
+    differences = fabs(rightBoundaryDegree - leftBoundaryDegree);
+    if(leftBoundaryDegree>rightBoundaryDegree) {
+        turnOneMotor(RIGHT, differences/4);
+        // turn(-differences/20);
+    } else {
+        turnOneMotor(LEFT, differences/4);
+        //turn(differences/20);
+    }
+    
 }
 
 void moveForwardWithSpeed(int movingSpeed) {
-	TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
-	TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
-	int count = 0;
-	while(count<1 && getTouchValue(leftBumper)==0 && getTouchValue(rightBumper)==0){
-		motor[leftMotor] = movingSpeed;
-		motor[rightMotor] = movingSpeed;
-		//setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
-		currentColor = getColorName(colorSensor);						// now robot enter the white tile.
-		if (currentColor == colorWhite) {
-			previousColor = colorWhite;
-			} else if(currentColor == colorBlack && previousColor == colorWhite) {
-			count++;
-			previousColor = colorBlack;
-			totalBlackTile++;
-			playSound(soundUpwardTones);
-		}
-	}
-	motor[leftMotor] = 0;
-	motor[rightMotor] = 0;
-	sleep(500);
+    TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
+    TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
+    int count = 0;
+    while(count<1 && getTouchValue(leftBumper)==0 && getTouchValue(rightBumper)==0){
+        motor[leftMotor] = movingSpeed;
+        motor[rightMotor] = movingSpeed;
+        //setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
+        currentColor = getColorName(colorSensor);						// now robot enter the white tile.
+        if (currentColor == colorWhite) {
+            previousColor = colorWhite;
+        } else if(currentColor == colorBlack && previousColor == colorWhite) {
+            count++;
+            previousColor = colorBlack;
+            totalBlackTile++;
+            playSound(soundUpwardTones);
+        }
+    }
+    motor[leftMotor] = 0;
+    motor[rightMotor] = 0;
+    sleep(500);
 }
 
 
 void moveToLine(){
-	moveForwardWithSpeed(MOVINGSPEED);
-	turnOneMotor(RIGHT, 330);
+    moveForwardWithSpeed(MOVINGSPEED);
+    turnOneMotor(RIGHT, 330);
 }
 
 task main()
 {
-	//stage one
-	//moveToLine();
-	//while(totalBlackTile<15) {
-	//	if (differences<20 && totalBlackTile<14) {
-	//		moveForwardWithSpeed(MOVINGSPEED);
-	//		moveForwardWithSpeed(MOVINGSPEED);
-	//		testBoundary();
-	//	} else  {
-	//		moveForwardWithSpeed(MOVINGSPEED);
-	//		testBoundary();
-	//	}
-	//}
-
-	// turnOneMotor(LEFT, 330);
-	setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
-	wait1Msec(2000);
-
-	while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
-		moveForwardWithSpeed(MOVINGSPEED);
-		scan();
-	}
-	setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
-	wait1Msec(2000);
-
-	playSound(soundUpwardTones);
-	wait1Msec(1000);
+    //stage one
+    moveToLine();
+    while(totalBlackTile<15) {
+        if (differences<20 && totalBlackTile<14) {
+            moveForwardWithSpeed(MOVINGSPEED);
+            moveForwardWithSpeed(MOVINGSPEED);
+            testBoundary();
+        } else  {
+            moveForwardWithSpeed(MOVINGSPEED);
+            testBoundary();
+        }
+    }
+    
+    turnOneMotor(LEFT, 330);
+    setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
+    wait1Msec(2000);
+    
+    while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
+        moveForwardWithSpeed(MOVINGSPEED);
+        scan();
+        if (targetDistance < 100) {
+            TURNINGSPEED = 7;
+        }
+    }
+    setMotorSyncTime(leftMotor, rightMotor, 0, 2000, MOVINGSPEED);
+    wait1Msec(2000);
+    
+    playSound(soundUpwardTones);
+    wait1Msec(1000);
 }
