@@ -37,10 +37,10 @@ I = np.random.permutation(n);
 Itrain = I[1:np.floor(pTrain*n)];
 Itest = I[np.floor(pTrain*n)+1:n];
 #Select training and test sets            
-xtrain = x[Itrain];                                                            # ? how to get array of data based on another two array
-ytrain = y_with_noise[Itrain];
-xtest = x[Itest];
-ytest = y_with_noise[Itest];
+xtrain = x[Itrain]                                                  # ? how to get array of data based on another two array
+ytrain = y_with_noise[Itrain]
+xtest = x[Itest]
+ytest = y_with_noise[Itest]
 
 #Use scipy's curve_fit method to fit data to two different hypothesis
 #functions.  The first arguemtn is the hypothesis function, then
