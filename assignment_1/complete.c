@@ -24,11 +24,25 @@ int leftBoundaryDegree = 0;
 int differences = 30;
 
 
+
+
 // DEFINED FUNCTION
-bool approachingTarget = false;
+bool getTarget = false;
+
+bool turningToTarget() {
+    float currentDistance = getUSDistance(sonarSensor);
+    if (currentDistance < previousDistance) {
+        previousDistance = currentDistance;
+        return true;
+    } else {
+        return false;
+    }
+}
+
+
 void turn(int degreeToTurn, int TURNINGSPEED){
-    int previousDistance = getUSDistance(sonarSensor);
-    int currentDistance = getUSDistance(sonarSensor);
+    float previousDistance = getUSDistance(sonarSensor);
+    bool turningToTarget = false;
 
     degreeToTurn = degreeToTurn * 2;
     resetMotorEncoder(leftMotor);
@@ -37,13 +51,11 @@ void turn(int degreeToTurn, int TURNINGSPEED){
         setMotorTarget(leftMotor, degreeToTurn, TURNINGSPEED);
         setMotorTarget(rightMotor, -degreeToTurn, TURNINGSPEED);
         while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor) && getTouchValue(leftBumper)!=1 && getTouchValue(rightBumper)!=1) {
-            setMotorSync(leftMotor, rightMotor, 100, TURNINGSPEED);
-            currentDistance = getUSDistance(sonarSensor);
+            float currentDistance = getUSDistance(sonarSensor);
             if (currentDistance<previousDistance) {
                 previousDistance = currentDistance; // it means it is turning toward to target;
-                approachingTarget = true;
-            } else if (approachingTarget && currentDistance > previousDistance && previousDistance < targetDistance) {
-                targetDistance = previousDistance;
+                getTarget = true;
+            } else if (getTarget && currentDistance > previousDistance) {
                 return;
             }
         }
@@ -53,12 +65,11 @@ void turn(int degreeToTurn, int TURNINGSPEED){
         setMotorTarget(rightMotor, degreeToTurn, TURNINGSPEED);
         while(getMotorEncoder(rightMotor)!=getMotorTarget(rightMotor)&& getTouchValue(leftBumper)!=1 && getTouchValue(rightBumper)!=1) {
             setMotorSync(leftMotor, rightMotor, -100, TURNINGSPEED);
-            currentDistance = getUSDistance(sonarSensor);
+            float currentDistance = getUSDistance(sonarSensor);
             if (currentDistance<previousDistance) {
                 previousDistance = currentDistance; // it means it is turning toward to target;
-                approachingTarget = true;
-            } else if (approachingTarget && currentDistance > previousDistance && previousDistance < targetDistance) {
-                targetDistance = previousDistance;
+                getTarget = true;
+            } else if (getTarget && currentDistance > previousDistance) {
                 return;
             }
         }
@@ -68,28 +79,17 @@ void turn(int degreeToTurn, int TURNINGSPEED){
 
 
 void scan() {
-    approachingTarget = false;
+    getTarget = false;
     int scanDegree = 45;
     if(getTouchValue(leftBumper)==1 || getTouchValue(rightBumper)==1){
         return;
     } else {
         turn(-scanDegree, TURNINGSPEED);
-        if (approachingTarget) {return;}
+        if (getTarget) {return;}
         turn(scanDegree*2,TURNINGSPEED);
-        if (approachingTarget) {return;}
+        if (getTarget) {return;}
         turn(-scanDegree, TURNINGSPEED);
     }
-
-
-
-    //while(!approachingTarget) {
-    //		if(count>=3) {break;}
-    //    turn(scanDegree);
-    //    if (approachingTarget) {break;}
-    //    turn(-scanDegree*2);
-    //    if (approachingTarget) {break;}
-    //    turn(scanDegree);
-    //}
 }
 
 
@@ -113,7 +113,7 @@ void turnOneMotor(bool leftMotorOrRightMotor, int motorEncoder)
                 setMotorSync(leftMotor, rightMotor, -50, -TURNINGSPEED);
             }
         }
-    } else {	// else false, LeftMotor move while RightMotor stop
+    } else {    // else false, LeftMotor move while RightMotor stop
         if (motorEncoder > 0) {
             setMotorTarget(leftMotor, motorEncoder, TURNINGSPEED);
             while(getMotorEncoder(leftMotor)!=getMotorTarget(leftMotor)) {
@@ -176,13 +176,13 @@ void testBoundary() {
 
 void moveForwardWithSpeed(int movingSpeed) {
     TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
-    TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
+    TLegoColors currentColor = getColorName(colorSensor);   // it should be black at start
     int count = 0;
     while(count<1 && getTouchValue(leftBumper)==0 && getTouchValue(rightBumper)==0){
         motor[leftMotor] = movingSpeed;
         motor[rightMotor] = movingSpeed;
         //setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
-        currentColor = getColorName(colorSensor);						// now robot enter the white tile.
+        currentColor = getColorName(colorSensor);                       // now robot enter the white tile.
         if (currentColor == colorWhite) {
             previousColor = colorWhite;
         } else if(currentColor == colorBlack && previousColor == colorWhite) {
@@ -205,8 +205,8 @@ void moveToLine(){
 
 void moveWithSpeedAndTime(int movingSpeed, int movingTime, int withRatio)
 {
-	setMotorSyncTime(leftMotor, rightMotor, withRatio, movingTime*1000, movingSpeed);
-	wait1Msec(movingTime*1000);
+    setMotorSyncTime(leftMotor, rightMotor, withRatio, movingTime*1000, movingSpeed);
+    wait1Msec(movingTime*1000);
 }
 
 task main()
