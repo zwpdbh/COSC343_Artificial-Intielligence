@@ -29,6 +29,7 @@ bool approachingTarget = false;
 void turn(int degreeToTurn, int TURNINGSPEED){
     int previousDistance = getUSDistance(sonarSensor);
     int currentDistance = getUSDistance(sonarSensor);
+    approachingTarget = false;
 
     degreeToTurn = degreeToTurn * 2;
     resetMotorEncoder(leftMotor);
@@ -79,17 +80,6 @@ void scan() {
         if (approachingTarget) {return;}
         turn(-scanDegree, TURNINGSPEED);
     }
-
-
-
-    //while(!approachingTarget) {
-    //		if(count>=3) {break;}
-    //    turn(scanDegree);
-    //    if (approachingTarget) {break;}
-    //    turn(-scanDegree*2);
-    //    if (approachingTarget) {break;}
-    //    turn(scanDegree);
-    //}
 }
 
 
@@ -234,8 +224,11 @@ task main()
 
 
     while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
+    	clearTimer(T1);
         moveForwardWithSpeed(MOVINGSPEED);
-        scan();
+        if(time1[T1]>=1500) {
+        		scan();
+        }
         if (targetDistance < 100) {
             TURNINGSPEED = 7;
         }
