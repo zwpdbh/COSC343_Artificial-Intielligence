@@ -9,7 +9,7 @@
 // GOLOBAL VARIABLES
 int totalBlackTile = 0;
 int MOVINGSPEED = 30;
-int targetDistance = 1000;
+float targetDistance = 1000.0;
 
 // variables for scan
 bool RIGHT = true;
@@ -27,8 +27,8 @@ int differences = 30;
 // DEFINED FUNCTION
 bool approachingTarget = false;
 void turn(int degreeToTurn, int TURNINGSPEED){
-    int previousDistance = getUSDistance(sonarSensor);
-    int currentDistance = getUSDistance(sonarSensor);
+    float previousDistance = getUSDistance(sonarSensor);
+    float currentDistance = getUSDistance(sonarSensor);
 
     degreeToTurn = degreeToTurn * 2;
     resetMotorEncoder(leftMotor);
@@ -236,7 +236,7 @@ task main()
     while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
         moveForwardWithSpeed(MOVINGSPEED);
         scan();
-        if (targetDistance < 100) {
+        if (targetDistance < 100.0) {
             TURNINGSPEED = 7;
         }
     }
