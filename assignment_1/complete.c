@@ -9,13 +9,12 @@
 // GOLOBAL VARIABLES
 int totalBlackTile = 0;
 int MOVINGSPEED = 30;
-float targetDistance = 1000.0;
+int targetDistance = 1000;
 
 // variables for scan
-bool RIGHT = true; // it should be enum if we know how to use it in ROBOTC
+bool RIGHT = true;
 bool LEFT = false;
 
-bool approachingTarget = false;
 int TURNINGSPEED = 10;
 
 // variables for test boundary
@@ -26,17 +25,10 @@ int differences = 30;
 
 
 // DEFINED FUNCTION
-/** in these turning function, the robot do two things: 
- * turning and recording the distance it get from the sensor.
- * For turning, it turns in its fixed postion with one wheel roll ahead and the other roll backward.
- * For scanning, it keep geting the distance in front ot it, it the distance should decrease first,
- * and increase as it turns away from the robot.
- * just as the distance is getting larger, it stop the turning.s 
- */
+bool approachingTarget = false;
 void turn(int degreeToTurn, int TURNINGSPEED){
-    float previousDistance = getUSDistance(sonarSensor);
-    float currentDistance = getUSDistance(sonarSensor);
-    bool approachingTarget = false;
+    int previousDistance = getUSDistance(sonarSensor);
+    int currentDistance = getUSDistance(sonarSensor);
 
     degreeToTurn = degreeToTurn * 2;
     resetMotorEncoder(leftMotor);
@@ -74,12 +66,7 @@ void turn(int degreeToTurn, int TURNINGSPEED){
 }
 
 
-/**
- * the robot scan first 45 degree to its left
- * then 90 degree to its right
- * at last 45 degree to its left
- * in any of these three steps, if it updated the target distance, it interupt turning.
- */
+
 void scan() {
     approachingTarget = false;
     int scanDegree = 45;
@@ -92,6 +79,17 @@ void scan() {
         if (approachingTarget) {return;}
         turn(-scanDegree, TURNINGSPEED);
     }
+
+
+
+    //while(!approachingTarget) {
+    //		if(count>=3) {break;}
+    //    turn(scanDegree);
+    //    if (approachingTarget) {break;}
+    //    turn(-scanDegree*2);
+    //    if (approachingTarget) {break;}
+    //    turn(scanDegree);
+    //}
 }
 
 
@@ -130,10 +128,7 @@ void turnOneMotor(bool leftMotorOrRightMotor, int motorEncoder)
     }
 }
 
-/**the robot move with one wheel, meet the boundary and move back
- * it returns the encoder in the turning process, so later it can use
- * the differences from right and left encoder to adjust its position.
- */
+
 int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
     resetMotorEncoder(leftMotor);
     resetMotorEncoder(rightMotor);
@@ -165,9 +160,6 @@ int turnOneMotorUntilMeetBoundary(bool leftOrRightMotor) {
 }
 
 
-/**it stops on a black tile, tests the black tile's boundary and adjust its postion 
- *based on the difference of the encoder of wheels
- */
 void testBoundary() {
     leftBoundaryDegree = turnOneMotorUntilMeetBoundary(RIGHT);
     rightBoundaryDegree = turnOneMotorUntilMeetBoundary(LEFT);
@@ -182,7 +174,6 @@ void testBoundary() {
 
 }
 
-/**keep moving with speed until it encountered a black tile*/
 void moveForwardWithSpeed(int movingSpeed) {
     TLegoColors previousColor = getColorName(colorSensor); // it should be black at start
     TLegoColors currentColor = getColorName(colorSensor);	// it should be black at start
@@ -190,8 +181,8 @@ void moveForwardWithSpeed(int movingSpeed) {
     while(count<1 && getTouchValue(leftBumper)==0 && getTouchValue(rightBumper)==0){
         motor[leftMotor] = movingSpeed;
         motor[rightMotor] = movingSpeed;
-        // setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
-        currentColor = getColorName(colorSensor);	// now robot enter the white tile.
+        //setMotorSync(leftMotor, rightMotor, 0, movingSpeed);
+        currentColor = getColorName(colorSensor);						// now robot enter the white tile.
         if (currentColor == colorWhite) {
             previousColor = colorWhite;
         } else if(currentColor == colorBlack && previousColor == colorWhite) {
@@ -213,19 +204,15 @@ void moveToLine(){
 }
 
 void moveWithSpeedAndTime(int movingSpeed, int movingTime, int withRatio)
-{   // move straight and turn to face the lane`
+{
 	setMotorSyncTime(leftMotor, rightMotor, withRatio, movingTime*1000, movingSpeed);
 	wait1Msec(movingTime*1000);
 }
 
-
-/**
- * Main function
- */ 
 task main()
 {
-    //stage 1
-    moveToLine();   
+    //stage one
+    moveToLine();
     while(totalBlackTile<15) {
         if (differences<20 && totalBlackTile<14) {
             moveForwardWithSpeed(MOVINGSPEED);
@@ -239,7 +226,7 @@ task main()
 
     // End of Stage1
 
-    // Start of Stage2:
+    // Start of 2:
     moveWithSpeedAndTime(-1*MOVINGSPEED, 1, 0);
 
     turnOneMotor(LEFT, 345);
@@ -249,16 +236,16 @@ task main()
     while (getTouchValue(leftBumper)==0&&getTouchValue(rightBumper)==0){
         moveForwardWithSpeed(MOVINGSPEED);
         scan();
-        if (targetDistance < 100.0) {
+        if (targetDistance < 100) {
             TURNINGSPEED = 7;
         }
     }
 
     // After it making contacts with targets
-    moveWithSpeedAndTime(-1*MOVINGSPEED, 2, 0); // move back for 2 second
-    moveWithSpeedAndTime(3*MOVINGSPEED, 2, 0); // then move with full speed and push 2 seconds
-    moveWithSpeedAndTime(-1*MOVINGSPEED, 1, 0); // move back 1 second 
-    moveWithSpeedAndTime(MOVINGSPEED, 2, 100); // turning for 2 seconds to clear the area.
+    moveWithSpeedAndTime(-1*MOVINGSPEED, 2, 0);
+    moveWithSpeedAndTime(3*MOVINGSPEED, 2, 0); //pushing 2 seconds
+    moveWithSpeedAndTime(-1*MOVINGSPEED, 1, 0);
+    moveWithSpeedAndTime(MOVINGSPEED, 2, 100); //turning for 2 seconds
 
     playSound(soundUpwardTones);
     wait1Msec(1000);
