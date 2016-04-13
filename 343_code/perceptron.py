@@ -65,21 +65,6 @@ while CORRECT!=5:
 		if exceptResult[i] == output[i]:
 			CORRECT += 1;
 
-	# print ""
-	# print "Start testing"
-	# for i in xrange(0,5):
-	# 	output[i] = resultOfOneExample(inputX[i])
-	# 	errors[i] = exceptResult[i] - resultOfOneExample(inputX[i])
-	# 	# print "error: {}".format(error)
-	# 	if resultOfOneExample(inputX[i]) == exceptResult[i]:
-	# 		CORRECT = CORRECT + 1
-
-	# epoch +=1
-	# print "CORRECT: {}, output: {}, target: {}, errors: {}".format(CORRECT, output, exceptResult, errors)
-	# print "================"
-	# print ""
-	# print ""
-
 	epoch +=1
 	print "CORRECT: {}, output: {}, target: {}".format(CORRECT, output, exceptResult)
 	print "================"
