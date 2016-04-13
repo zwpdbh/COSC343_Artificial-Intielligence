@@ -30,7 +30,7 @@ def resultOfOneExample(inputExample):
 #===============================================================================================
 
 # step 1: initialization
-alpha = 0.001
+alpha = 0.01
 
 inputX = [zero, one, two, three, four]
 #print inputX
@@ -39,7 +39,7 @@ weigthW = [0] * 25
 for i in xrange(0, 25):
 	weigthW[i] = random.uniform(-0.999, 0.999)
 
-b = random.uniform(-0.99, 0.99)
+b = random.uniform(-0.999, 0.999)
 epoch = 0
 
 exceptResult = [0, 1, 0, 1, 0]
@@ -56,29 +56,36 @@ while CORRECT!=5:
 	print "Start training: "
 
 	for i in xrange(0,5):
-		resultOfEachInput = resultOfOneExample(inputX[i])
-		error = exceptResult[i] - resultOfEachInput
+		output[i] = resultOfOneExample(inputX[i])
+		error = exceptResult[i] - output[i]
 		# print "error: {}".format(error)
 		for index in xrange(0,25):
 			weigthW[index] += alpha * error * inputX[i][index]
 		b = b + alpha * error * (-1)
+		if exceptResult[i] == output[i]:
+			CORRECT += 1;
 
-	print ""
-	print "Start testing"
-	for i in xrange(0,5):
-		output[i] = resultOfOneExample(inputX[i])
-		errors[i] = exceptResult[i] - resultOfOneExample(inputX[i])
-		# print "error: {}".format(error)
-		if resultOfOneExample(inputX[i]) == exceptResult[i]:
-			CORRECT = CORRECT + 1
+	# print ""
+	# print "Start testing"
+	# for i in xrange(0,5):
+	# 	output[i] = resultOfOneExample(inputX[i])
+	# 	errors[i] = exceptResult[i] - resultOfOneExample(inputX[i])
+	# 	# print "error: {}".format(error)
+	# 	if resultOfOneExample(inputX[i]) == exceptResult[i]:
+	# 		CORRECT = CORRECT + 1
+
+	# epoch +=1
+	# print "CORRECT: {}, output: {}, target: {}, errors: {}".format(CORRECT, output, exceptResult, errors)
+	# print "================"
+	# print ""
+	# print ""
 
 	epoch +=1
-	print "CORRECT: {}, output: {}, target: {}, errors: {}".format(CORRECT, output, exceptResult, errors)
+	print "CORRECT: {}, output: {}, target: {}".format(CORRECT, output, exceptResult)
 	print "================"
 	print ""
 	print ""
-	# if epoch>=5:
-	# 	break
+
 
 
 #Testing the generalisation ability:
